@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="MacHub 的安装和使用说明：设置 hub、连接，在 hub 的项目里用 Claude Code、Codex、Grok，更新和常见问题。">
+<title>MacHub 使用说明</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Noto+Sans+SC:wght@400;500;700;900&amp;display=swap">
+<style>
+/* 布局：单栏说明书。开头左边是名字和要点，右边是菜单栏示意；接着是两台 Mac 的连接示意；
+   之后每一节左边是标题、右边是内容：准备 → 设置 hub → 安装 → 连接 → 日常使用 → 常见问题 → 改了哪些地方。 */
+:root {
+  --bg: #f2f5f6;
+  --surface: #ffffff;
+  --ink: #13202a;
+  --muted: #536572;
+  --line: #d5dee3;
+  --accent: #0a6f80;
+  --on-accent: #ffffff;
+  --accent-soft: #dbecef;
+  --code-bg: #e7edf0;
+  --menu-bg: #f7f9fa;
+  --shadow: 0 1px 2px rgba(19, 32, 42, .06), 0 12px 32px rgba(19, 32, 42, .10);
+  --font-text: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs-hero: clamp(2.75rem, 8vw, 4.25rem);
+  --fs-h2: 1.625rem;
+  --fs-h3: 1.0625rem;
+  --fs-lede: 1.1875rem;
+  --fs-body: 1rem;
+  --fs-small: .875rem;
+  --measure: 42rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1317;
+    --surface: #141c21;
+    --ink: #e2eaee;
+    --muted: #8fa1ac;
+    --line: #26333c;
+    --accent: #55c3d1;
+    --on-accent: #06262c;
+    --accent-soft: #123039;
+    --code-bg: #1a242b;
+    --menu-bg: #1d262c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 32px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1317;
+  --surface: #141c21;
+  --ink: #e2eaee;
+  --muted: #8fa1ac;
+  --line: #26333c;
+  --accent: #55c3d1;
+  --on-accent: #06262c;
+  --accent-soft: #123039;
+  --code-bg: #1a242b;
+  --menu-bg: #1d262c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 32px rgba(0, 0, 0, .45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+  padding-block: 48px 80px;
+  display: grid;
+  gap: 64px;
+}
+h1, h2, h3 { margin: 0; line-height: 1.25; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+code, pre { font-family: var(--font-mono); }
+:not(pre) > code {
+  font-size: .875em;
+  background: var(--code-bg);
+  padding: .1em .35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+
+/* 开头 */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 40px 56px;
+  align-items: center;
+}
+.hero h1 {
+  font-size: var(--fs-hero);
+  font-weight: 900;
+  letter-spacing: -.025em;
+  line-height: 1.05;
+  margin-block: 10px 18px;
+}
+.hero h1 span { color: var(--accent); }
+.lede { font-size: var(--fs-lede); line-height: 1.7; max-width: 32rem; }
+.facts { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 8px; }
+.facts li { display: flex; gap: 10px; align-items: baseline; }
+.facts li::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-2px);
+}
+.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 28px; font-size: var(--fs-small); }
+.toc a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); transition: color .15s, border-color .15s; }
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* 菜单栏示意 */
+.mock { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.screen {
+  container-type: inline-size;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: radial-gradient(120% 90% at 85% 0%, var(--accent-soft), var(--surface) 65%);
+  box-shadow: var(--shadow);
+}
+.menubar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 3px 14px;
+  font-size: 12.5px;
+  background: var(--menu-bg);
+  border-bottom: 1px solid var(--line);
+}
+.mb-icon { display: grid; place-items: center; padding: 3px 7px; border-radius: 5px; background: var(--line); color: var(--ink); }
+.mb-icon svg { display: block; }
+.menus { display: flex; justify-content: flex-end; padding: 4px 10px 26px; }
+.menu {
+  width: 15rem;
+  max-width: 100%;
+  background: var(--menu-bg);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 5px;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: var(--shadow);
+}
+.menu .status { color: var(--muted); padding: 3px 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 9px; }
+.menu .item { padding: 3px 9px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menu .item.on { background: var(--accent); color: var(--on-accent); }
+figcaption { font-size: var(--fs-small); color: var(--muted); }
+
+/* 两台 Mac 怎么连 */
+.wiring {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 15rem) minmax(0, 1fr);
+  align-items: center;
+}
+.node {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: grid;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.node-name { font-weight: 900; font-size: 1.25rem; line-height: 1.3; }
+.node-paths { margin: 0; display: grid; gap: 8px; }
+.node-paths dd { margin: 0; color: var(--muted); font-size: var(--fs-small); }
+.node-foot { font-size: var(--fs-small); color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+.wires { display: grid; gap: 18px; }
+.wire { display: grid; gap: 2px; text-align: center; font-size: var(--fs-small); }
+.cable { height: 2px; background: var(--accent); position: relative; margin-block: 4px; }
+.cable::before, .cable::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+.cable::before { left: 0; }
+.cable::after { right: 0; }
+.proto { font-family: var(--font-mono); font-weight: 600; color: var(--accent); letter-spacing: .04em; }
+.wire-note { color: var(--muted); padding-inline: 8px; }
+.tailnet {
+  justify-self: center;
+  font-size: .8125rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 12px;
+}
+
+/* 每一节 */
+.sec {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: 20px 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.sec-head { display: grid; gap: 6px; align-content: start; }
+.sec-head h2 { font-size: var(--fs-h2); font-weight: 700; }
+.sec-sum { color: var(--muted); font-size: var(--fs-small); }
+.sec-body { display: grid; gap: 28px; min-width: 0; max-width: var(--measure); }
+.sec-body h3 { font-size: var(--fs-h3); font-weight: 700; margin-bottom: 6px; }
+.block { display: grid; gap: 10px; }
+.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.aside { color: var(--muted); font-size: var(--fs-small); }
+
+.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: grid; gap: 20px; }
+.steps > li { counter-increment: step; display: grid; grid-template-columns: 2rem minmax(0, 1fr); column-gap: 14px; }
+.steps > li::before {
+  content: counter(step);
+  grid-row: 1 / span 2;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: .875rem;
+  line-height: 1;
+}
+.steps > li > p:first-of-type { padding-top: 2px; font-weight: 500; }
+.more { color: var(--muted); margin-top: 4px; }
+.path {
+  background: var(--accent-soft);
+  padding: .08em .45em;
+  border-radius: 5px;
+  font-weight: 500;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.path i { font-style: normal; color: var(--accent); margin-inline: .3em; }
+
+.did { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; }
+.did-title { font-weight: 700; }
+
+.code {
+  margin: 0;
+  background: var(--code-bg);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: .84375rem;
+  line-height: 1.7;
+}
+.code.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.code .note { color: var(--muted); }
+
+.say {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+}
+.say-line { flex: 1 1 14rem; min-width: 0; font-size: 1.125rem; font-weight: 500; overflow-wrap: anywhere; }
+.copy {
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  transition: filter .15s;
+}
+.copy:hover { filter: brightness(1.08); }
+.file { margin: 0; display: grid; gap: 8px; }
+
+.faq { margin: 0; display: grid; }
+.qa {
+  display: grid;
+  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+  gap: 4px 24px;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.qa:first-child { padding-top: 0; }
+.qa:last-child { border-bottom: 0; }
+.qa dt { font-weight: 700; }
+.qa dd { margin: 0; min-width: 0; }
+.qa dd pre { margin-top: 10px; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 36rem; font-size: var(--fs-small); }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-weight: 700; color: var(--muted); font-size: .8125rem; letter-spacing: .04em; }
+td:first-child { white-space: nowrap; }
+
+.foot { color: var(--muted); font-size: var(--fs-small); border-top: 1px solid var(--line); padding-top: 20px; }
+
+@media (min-width: 861px) {
+  .sec-head { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; }
+}
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .sec { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .wiring { grid-template-columns: minmax(0, 1fr); }
+  .wires { grid-template-columns: 1fr 1fr; gap: 0 12px; padding-block: 6px; }
+  .wire { grid-template-rows: auto 44px auto; justify-items: center; }
+  .cable { width: 2px; height: auto; margin-block: 6px; }
+  .cable::before { left: 50%; top: 0; transform: translate(-50%, -50%); }
+  .cable::after { left: 50%; right: auto; top: 100%; transform: translate(-50%, -50%); }
+  .tailnet { grid-column: 1 / -1; margin-block: 6px; }
+}
+@media (max-width: 640px) {
+  .qa { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+<style>body { margin: 0; }</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">版本 2.3 · macOS 13 及以上</p>
+      <h1>Mac<span>Hub</span></h1>
+      <p class="lede">让你 Mac 上的 Claude Code、Codex 和 Grok 直接打开另一台 Mac 上的项目，用起来和本地目录一样。那台 Mac 叫 hub。</p>
+      <ul class="facts">
+        <li>只装在你的 Mac 上，hub 上不用装</li>
+        <li>两台 Mac 通过 Tailscale 相连，不在同一个网络也能用</li>
+        <li>不改 CLAUDE.md、AGENTS.md，不往项目里写东西</li>
+      </ul>
+      <nav class="toc" aria-label="目录">
+        <a href="#hub">设置 hub</a>
+        <a href="#install">安装</a>
+        <a href="#connect">连接</a>
+        <a href="#use">日常使用</a>
+        <a href="#faq">常见问题</a>
+        <a href="#changes">改了哪些地方</a>
+      </nav>
+    </div>
+    <figure class="mock">
+      <div class="screen">
+        <div class="menubar" aria-hidden="true">
+          <span class="mb-icon">
+            <svg width="18" height="13" viewBox="0 0 18 13"><rect x="0.75" y="0.75" width="16.5" height="11.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1 7.5h16" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="13.5" cy="10" r="1.1" fill="currentColor"/></svg>
+          </span>
+          <span>周三 10:24</span>
+        </div>
+        <div class="menus">
+          <div class="menu">
+            <div class="status">hub mac-studio · 挂载正常</div>
+            <hr>
+            <div class="item on">用 Claude 打开文件夹…</div>
+            <div class="item">用 Codex 打开文件夹…</div>
+            <div class="item">用 Grok 打开文件夹…</div>
+            <div class="item">在终端打开文件夹…</div>
+            <hr>
+            <div class="item">重新挂载</div>
+            <hr>
+            <div class="item">打开 MacHub…</div>
+            <div class="item">退出 MacHub</div>
+          </div>
+        </div>
+      </div>
+      <figcaption>菜单栏里的 MacHub：先选项目文件夹，再用 AI 打开。</figcaption>
+    </figure>
+  </header>
+
+  <section class="wiring" aria-label="两台 Mac 怎么连">
+    <div class="node">
+      <p class="node-name">你的 Mac</p>
+      <dl class="node-paths">
+        <div><dt><code>~/remote/projects/</code></dt><dd>hub 上的项目，挂载过来</dd></div>
+        <div><dt><code>~/remote/hub.md</code></dt><dd>给 AI 看的 hub 用法</dd></div>
+      </dl>
+      <p class="node-foot">AI 在这台 Mac 上运行</p>
+    </div>
+    <div class="wires">
+      <div class="wire">
+        <p><span class="proto">SMB</span> 文件</p>
+        <div class="cable" aria-hidden="true"></div>
+        <p class="wire-note">读写 hub 上的项目</p>
+      </div>
+      <div class="wire">
+        <p><span class="proto">SSH</span> 命令</p>
+        <div class="cable" aria-hidden="true"></div>
+        <p class="wire-note">在 hub 上执行</p>
+      </div>
+      <p class="tailnet">两条都走 Tailscale</p>
+    </div>
+    <div class="node">
+      <p class="node-name">hub</p>
+      <dl class="node-paths">
+        <div><dt><code>~/Projects/</code></dt><dd>项目真正放的地方</dd></div>
+      </dl>
+      <p class="node-foot">装好的依赖、数据库和服务都在这里</p>
+    </div>
+  </section>
+
+  <section class="sec" id="before">
+    <header class="sec-head">
+      <p class="eyebrow">开始之前</p>
+      <h2>准备两台 Mac</h2>
+    </header>
+    <div class="sec-body">
+      <ul class="plain">
+        <li>你的 Mac 和 hub 都装好 <a href="https://tailscale.com/download/mac">Tailscale</a>，登录同一个账号。</li>
+        <li>hub 保持开机，不要睡眠。hub 睡眠时挂载会断，醒来后 MacHub 会自动重新挂载。</li>
+        <li>知道 hub 上一个账户的账户名和登录密码。下面的设置都对这个账户做。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="hub">
+    <header class="sec-head">
+      <p class="eyebrow">第 1 步 · 在 hub 上</p>
+      <h2>设置 hub</h2>
+      <p class="sec-sum">只做一次。hub 上不用装 MacHub。</p>
+    </header>
+    <div class="sec-body">
+      <ol class="steps">
+        <li>
+          <p>打开 <span class="path">系统设置<i>›</i>通用<i>›</i>共享</span>，打开「文件共享」，点它旁边的 ⓘ。</p>
+          <p class="more">共享文件夹里加上放项目的文件夹，一般是家目录里的 <code>Projects</code>，名字只能用英文字母、数字和 <code>. _ -</code>。用户里只给自己「读与写」，「所有人」设成「无访问权限」。</p>
+        </li>
+        <li>
+          <p>在同一个窗口点「选项…」，在「Windows 文件共享」里勾上自己的账户，输入登录密码。</p>
+          <p class="more">通过 Tailscale 挂载时，两台 Mac 之间用不了 Kerberos，要靠这个验证密码。不勾的话，挂载会报用户名或密码不对。</p>
+        </li>
+        <li>
+          <p>打开「远程登录」，点 ⓘ，在「仅这些用户」里加上自己。</p>
+          <p class="more">这里会显示一行 <code>ssh 账户名@地址</code>。记下账户名，连接时要填。</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="install">
+    <header class="sec-head">
+      <p class="eyebrow">第 2 步 · 在你的 Mac 上</p>
+      <h2>安装 MacHub</h2>
+    </header>
+    <div class="sec-body">
+      <ol class="steps">
+        <li>
+          <p>下载 <code>MacHub.zip</code>：<a href="https://github.com/kiwi321/MacHub/releases/latest">GitHub 上的最新版本</a>。</p>
+          <p class="more">仓库是私有的，要有权限才能打开。打不开就向发给你这个页面的人要安装包。</p>
+        </li>
+        <li>
+          <p>解压，把 MacHub 拖进「应用程序」。</p>
+        </li>
+        <li>
+          <p>第一次打开会被系统拦下，因为它没有开发者签名。</p>
+          <p class="more">打开 <span class="path">系统设置<i>›</i>隐私与安全性</span>，拉到下面点「仍要打开」。</p>
+        </li>
+      </ol>
+      <p class="aside">MacHub 平时只在菜单栏，图标是一个硬盘。点它，再点「打开 MacHub…」就是主窗口。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="connect">
+    <header class="sec-head">
+      <p class="eyebrow">第 3 步 · 在你的 Mac 上</p>
+      <h2>连接 hub</h2>
+    </header>
+    <div class="sec-body">
+      <ol class="steps">
+        <li>
+          <p>打开 MacHub，在「选 hub」列表里点 hub。</p>
+          <p class="more">列表来自 Tailscale。hub 不在里面就手动填地址，比如 <code>mac-studio.tailxxxx.ts.net</code>。</p>
+        </li>
+        <li>
+          <p>填 hub 上的账户名和登录密码，点「连接」。</p>
+          <p class="more">账户名是家目录文件夹的名字，不是锁屏上显示的全名。「共享文件夹」默认是 <code>Projects</code>，和第 1 步共享的文件夹一致就行。</p>
+        </li>
+      </ol>
+      <div class="did">
+        <p class="did-title">点「连接」后，MacHub 会：</p>
+        <ul class="plain">
+          <li>生成一把专用的 SSH 密钥并装到 hub，以后 <code>ssh hub</code> 不用输密码</li>
+          <li>把 hub 的 <code>~/Projects</code> 挂到 <code>~/remote/projects</code>，断了会自动重新挂载</li>
+          <li>把 hub 的用法写进 <code>~/remote/hub.md</code></li>
+          <li>把密码存进这台 Mac 的钥匙串，只用来重新挂载</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="use">
+    <header class="sec-head">
+      <p class="eyebrow">日常使用</p>
+      <h2>在 hub 的项目里用 AI</h2>
+    </header>
+    <div class="sec-body">
+      <div class="block">
+        <h3>打开项目</h3>
+        <p>启动命令就是进到项目目录，再照常启动 AI：</p>
+        <pre class="code"><code>cd ~/remote/projects/my-app &amp;&amp; claude
+cd ~/remote/projects/my-app &amp;&amp; codex
+cd ~/remote/projects/my-app &amp;&amp; grok</code></pre>
+        <p>在 MacHub 窗口里点「选择文件夹…」选一个项目，会列出这几条命令，路径换成你选的文件夹。每条都能复制到自己的终端里运行，也可以点「运行」，MacHub 会打开「终端」执行同一条命令。菜单栏里的「用 Claude 打开文件夹…」等，会先让你选文件夹，再直接启动。</p>
+      </div>
+      <div class="block">
+        <h3>让 AI 用 hub</h3>
+        <p>AI 默认不知道有 hub。需要它在 hub 上装依赖、跑构建和测试、启动服务时，跟它说一句：</p>
+        <div class="say">
+          <p class="say-line" id="say-line">hub 的用法见 ~/remote/hub.md</p>
+          <button type="button" class="copy" data-copy="hub 的用法见 ~/remote/hub.md" aria-controls="say-line">复制</button>
+        </div>
+        <p>它读完就知道项目在 hub 上的哪个目录，以及怎么用 <code>ssh hub '…'</code> 在 hub 上执行命令。哪些命令放到 hub 上跑，由它自己判断。你自己也可以用 <code>ssh hub</code> 登录 hub。</p>
+      </div>
+      <figure class="file">
+        <figcaption><code>~/remote/hub.md</code> 的内容。连接后 MacHub 自动写好，地址和文件夹按你的设置填。</figcaption>
+        <pre class="code wrap"><code>&lt;!-- MacHub 生成，会被覆盖 --&gt;
+## 远程项目（MacHub）
+`~/remote/projects/` 下的项目实际放在 hub 这台 Mac 上：它是 hub 的 `~/Projects/`，通过 SMB 挂载过来。在这个目录下工作时：
+- 可以用 `ssh hub` 登录 hub（Tailscale 地址 mac-studio.tailxxxx.ts.net）。需要 hub 的环境时，比如那边装好的依赖、数据库、服务，或者比较重的构建和测试，可以在 hub 上执行：`ssh hub 'cd ~/Projects/&lt;项目&gt; &amp;&amp; &lt;命令&gt;'`。其他命令照常在本机执行，你自己判断。
+- 这样执行的是不登录的 shell，PATH 可能比 hub 终端里少。命令找不到时，用 `ssh hub 'zsh -lic "cd ~/Projects/&lt;项目&gt; &amp;&amp; &lt;命令&gt;"'` 加载 hub 终端的完整环境。
+- 挂载目录的读写比本地慢。大量小文件的操作（装依赖、全量搜索）放到 hub 上做更快。
+- hub 上启动的服务，可以用 `http://mac-studio.tailxxxx.ts.net:&lt;端口&gt;` 访问。
+- 如果 `~/remote/projects/` 是空的，说明挂载断了，先告诉用户。</code></pre>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sec" id="faq">
+    <header class="sec-head">
+      <p class="eyebrow">遇到问题</p>
+      <h2>常见问题</h2>
+    </header>
+    <div class="sec-body">
+      <dl class="faq">
+        <div class="qa">
+          <dt>列表里没有 hub</dt>
+          <dd>两台 Mac 要登录同一个 Tailscale 账号，hub 要在线。也可以直接在下面填 hub 的地址。</dd>
+        </div>
+        <div class="qa">
+          <dt>提示「账户名不能有空格」</dt>
+          <dd>填成了锁屏上显示的全名。到 hub 的「远程登录」ⓘ 里看 <code>ssh 账户名@地址</code>，填 @ 前面那段。</dd>
+        </div>
+        <div class="qa">
+          <dt>挂载失败，说用户名或密码不对</dt>
+          <dd>在 hub 的「文件共享」ⓘ →「选项…」里勾上「Windows 文件共享」，再回来连接。如果是这个原因，MacHub 会直接告诉你。</dd>
+        </div>
+        <div class="qa">
+          <dt><code>ssh hub '…'</code> 找不到 node、npm</dt>
+          <dd>这种 ssh 不读 hub 的 <code>~/.zprofile</code>，找不到 Homebrew 装的命令。MacHub 窗口里这一项打叉时点「修复」，它会在 hub 的 <code>~/.zshenv</code> 里加一段带标记的设置，只对这种 ssh 生效，不影响 hub 上的终端。</dd>
+        </div>
+        <div class="qa">
+          <dt>菜单栏图标变成感叹号，或者 <code>~/remote/projects</code> 是空的</dt>
+          <dd>挂载断了，一般是 hub 关机、睡眠或 Tailscale 掉线。MacHub 每分钟检查一次，会自动重新挂载；也可以点「重新挂载」。</dd>
+        </div>
+        <div class="qa">
+          <dt>系统问 MacHub 能不能使用钥匙串</dt>
+          <dd>点「始终允许」。更新 MacHub 后，第一次读取密码时会问一次。</dd>
+        </div>
+        <div class="qa">
+          <dt>Codex 每次执行 <code>ssh hub</code> 都要批准</dt>
+          <dd>
+            <p>Codex 默认的沙箱不让联网。在 <code>~/.codex/config.toml</code> 里加上：</p>
+            <pre class="code"><code>[sandbox_workspace_write]
+network_access = true</code></pre>
+          </dd>
+        </div>
+        <div class="qa">
+          <dt>怎么更新 MacHub</dt>
+          <dd>MacHub 启动时和之后每 6 小时检查一次新版本。有新版时，菜单栏最上面会出现「更新到 vX 并重启」，点一下就会下载、替换、重新打开。下载要用这台 Mac 上已经登录的 GitHub 命令行工具 gh（<code>brew install gh</code>，再 <code>gh auth login</code>），账号要能看到这个仓库。没装 gh 时，「检查更新」会打开 GitHub 下载页。更新后系统可能再问一次能不能访问网络宗卷和钥匙串，点「允许」。</dd>
+        </div>
+        <div class="qa">
+          <dt>不用了，怎么断开</dt>
+          <dd>MacHub 窗口最下面点「断开 hub…」。它会卸载 <code>~/remote/projects</code>，删掉钥匙串里的密码和 <code>~/remote/hub.md</code>。hub 上的文件不受影响。</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="changes">
+    <header class="sec-head">
+      <p class="eyebrow">清单</p>
+      <h2>MacHub 改了哪些地方</h2>
+      <p class="sec-sum">只有这些。不改 CLAUDE.md、AGENTS.md，也不往项目仓库里写东西。</p>
+    </header>
+    <div class="sec-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>位置</th><th>内容</th><th>什么时候</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>你的 Mac <code>~/.ssh/config</code></td><td>一段 <code>Host hub</code>，前后有 <code># &gt;&gt;&gt; MacHub</code> 标记</td><td>连接时</td></tr>
+            <tr><td>你的 Mac <code>~/.ssh/machub_ed25519</code></td><td>MacHub 专用的 SSH 密钥</td><td>连接时</td></tr>
+            <tr><td>你的 Mac <code>~/remote/projects</code></td><td>挂载 hub 项目的位置</td><td>连接时挂载，断开时卸载</td></tr>
+            <tr><td>你的 Mac <code>~/remote/hub.md</code></td><td>给 AI 看的 hub 用法</td><td>连接时写，断开时删</td></tr>
+            <tr><td>你的 Mac 钥匙串</td><td>一条「MacHub」，存 hub 的登录密码</td><td>连接时存，断开时删</td></tr>
+            <tr><td>hub <code>~/.ssh/authorized_keys</code></td><td>加一行 MacHub 的公钥</td><td>连接时</td></tr>
+            <tr><td>hub <code>~/.zshenv</code></td><td>一段带标记的 PATH 设置</td><td>只在你点「修复」后</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>MacHub 2.3.0 · 源码在 GitHub 的 kiwi321/MacHub（私有仓库）</p>
+  </footer>
+</div>
+
+<script>
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-copy]');
+  if (!b) return;
+  function show(msg) {
+    b.textContent = msg;
+    clearTimeout(b._reset);
+    b._reset = setTimeout(function () { b.textContent = '复制'; }, 2000);
+  }
+  function selectText() {
+    var el = document.getElementById(b.getAttribute('aria-controls'));
+    if (!el) { show('复制失败'); return; }
+    var r = document.createRange();
+    r.selectNodeContents(el);
+    var s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+    show('已选中，按 ⌘C');
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(b.getAttribute('data-copy')).then(function () { show('已复制'); }, selectText);
+    } else {
+      selectText();
+    }
+  } catch (err) {
+    selectText();
+  }
+});
+</script>
+</body>
+</html>
